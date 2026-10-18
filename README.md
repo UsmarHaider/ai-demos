@@ -26,9 +26,10 @@ a prebuilt helper.
 - [Step 1 — Get the code](#step-1--get-the-code)
 - [Step 2 — Install the dependencies](#step-2--install-the-dependencies)
 - [Step 3 — Add your API key](#step-3--add-your-api-key)
-- [Step 4 — Run the pre-flight check](#step-4--run-the-pre-flight-check)
-- [Step 5 — Demo 1: the RAG chatbot](#step-5--demo-1-the-rag-chatbot)
-- [Step 6 — Demo 2: the LangGraph agent](#step-6--demo-2-the-langgraph-agent)
+- [Step 4 — Build the RAG index](#step-4--build-the-rag-index)
+- [Step 5 — Run the pre-flight check](#step-5--run-the-pre-flight-check)
+- [Step 6 — Demo 1: the RAG chatbot](#step-6--demo-1-the-rag-chatbot)
+- [Step 7 — Demo 2: the LangGraph agent](#step-7--demo-2-the-langgraph-agent)
 - [Which model does what](#which-model-does-what)
 - [Running with no API key at all](#running-with-no-api-key-at-all)
 - [Questions students will ask](#questions-students-will-ask)
@@ -149,7 +150,28 @@ before printing it.
 
 ---
 
-## Step 4 — Run the pre-flight check
+## Step 4 — Build the RAG index
+
+```bash
+./run_ingest.sh
+```
+
+This reads the four documents, splits them into 15 chunks, embeds each one and
+saves the result to `01_rag_chatbot/index/`. It takes about two seconds and
+makes one API call.
+
+**Do this before `check.sh`**, because the index is not in the repository — it
+is generated, and `.gitignore` excludes it. A fresh clone has no index, and the
+pre-flight check reports a red `FAIL` until you build one.
+
+> You can skip this step if you like: `./run_rag.sh` builds the index
+> automatically when it is missing. Run it by hand when you want a class to
+> *watch* the index being built, or before `check.sh` so every line comes back
+> green.
+
+---
+
+## Step 5 — Run the pre-flight check
 
 ```bash
 ./check.sh
@@ -177,7 +199,7 @@ audience. If one says `FAIL`, the message names the fix; see
 
 ---
 
-## Step 5 — Demo 1: the RAG chatbot
+## Step 6 — Demo 1: the RAG chatbot
 
 ### The problem it solves
 
@@ -188,13 +210,10 @@ cite which document it used.
 ### Run it
 
 ```bash
-./run_ingest.sh     # stage 1: build the index (~2 s). Optional — see below
-./run_rag.sh        # stage 2: ask questions
+./run_rag.sh        # interactive
 ```
 
-`run_rag.sh` builds the index automatically if it is missing, so you can skip
-straight to it. Run `run_ingest.sh` by hand when you want the class to *watch*
-the index being built.
+You built the index in [step 4](#step-4--build-the-rag-index); this is stage 2.
 
 ```bash
 ./run_rag.sh --ask "What is the per diem for international travel?"   # one question, no prompt
@@ -243,7 +262,7 @@ rm -rf 01_rag_chatbot/index && ./run_ingest.sh
 
 ---
 
-## Step 6 — Demo 2: the LangGraph agent
+## Step 7 — Demo 2: the LangGraph agent
 
 ### The problem it solves
 
@@ -393,7 +412,7 @@ stays the same.
 | Model call hangs or times out | Run `./check.sh` — it makes a real call and reports what failed |
 | `429 ... quota exceeded` | Already handled — the code waits and retries with a yellow warning. Keep talking; it recovers |
 | Embeddings fail | `EMBED_BACKEND=local ./run_ingest.sh`, then `EMBED_BACKEND=local ./run_rag.sh` — no network needed |
-| `No index found` | `./run_ingest.sh` |
+| `No index found`, or `check.sh` says `RAG index built ... FAIL` | `./run_ingest.sh`. Expected on a fresh clone — the index is generated, not committed |
 | `index built with 'X' but .env says 'Y'` | You changed `EMBED_BACKEND`. Run `./run_ingest.sh` to rebuild |
 | Output too wide / wrapping | Shrink the terminal font, or pass `--hide-prompt` |
 
