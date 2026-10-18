@@ -34,9 +34,9 @@ calls and two tool runs.
 ## Run it
 
 ```bash
-../run_agent.sh                       # or: ../.venv/bin/python agent.py
-../run_agent.sh --ask "What is the time in Tokyo right now?"
-../run_agent.sh --graph               # print the diagram and exit
+./run.sh                       # or: ../.venv/bin/python agent.py
+./run.sh --ask "What is the time in Tokyo right now?"
+./run.sh --graph               # print the diagram and exit
 ```
 
 Commands inside the chat: `/graph` `/tools` `/prompt` `/reset` `/quit`

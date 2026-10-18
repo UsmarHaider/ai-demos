@@ -2,10 +2,16 @@
 
 About 65 minutes. Drop Part 3 and trim the exercises if you only have 45.
 
-**Before you start:** `./check.sh` — a few seconds, and it tells you if anything
-broke overnight. It checks that your key works and that tool calling still
-works, which are the two things that would sink the session. Also make your
-terminal font big and your window wide
+**Before you start:** run the pre-flight check — a few seconds, and it tells
+you if anything broke overnight.
+
+```bash
+./.venv/bin/python -m shared.preflight
+```
+
+It checks that your key works and that tool calling still works, which are the
+two things that would sink the session. Also make your terminal font big and
+your window wide
 (100 columns minimum, or the tables wrap).
 
 ---
@@ -14,8 +20,8 @@ terminal font big and your window wide
 
 Open two terminal tabs, both in `demo_project`:
 
-- Tab 1 → `./run_rag.sh`
-- Tab 2 → `./run_agent.sh`
+- Tab 1 → `./01_rag_chatbot/run.sh`
+- Tab 2 → `./02_agent_langgraph/run.sh`
 
 Also open `PROMPTS.md` in your editor — you will show prompts from it.
 
@@ -42,7 +48,7 @@ Say: *"The model has never seen these. I made them up this week."*
 ### 1.3 Build the index, live (5 min)
 
 ```bash
-./run_ingest.sh
+./01_rag_chatbot/run.sh ingest
 ```
 
 Walk through the four printed steps as they appear:
@@ -60,7 +66,7 @@ Walk through the four printed steps as they appear:
 ### 1.4 Ask a question (5 min)
 
 ```bash
-./run_rag.sh --ask "How many annual leave days do I get, and how many can I carry over?"
+./01_rag_chatbot/run.sh --ask "How many annual leave days do I get, and how many can I carry over?"
 ```
 
 Narrate the four stages:
@@ -76,7 +82,7 @@ Narrate the four stages:
 ### 1.5 The money shot (5 min)
 
 ```bash
-./run_rag.sh --ask "Who won the 2022 football World Cup?"
+./01_rag_chatbot/run.sh --ask "Who won the 2022 football World Cup?"
 ```
 
 The answer is *"I could not find that in the company documents."*
@@ -109,7 +115,7 @@ it right now?"* It has no clock. Neither can it reliably do `1575 / 3`.
 ### 2.2 The graph (3 min)
 
 ```bash
-./run_agent.sh --graph
+./02_agent_langgraph/run.sh --graph
 ```
 
 Two boxes and one loop. `agent` decides; `tools` executes; the arrow back is
@@ -117,7 +123,7 @@ what makes it an agent instead of a chatbot.
 
 ### 2.3 No tool needed (2 min)
 
-Start `./run_agent.sh`, then type:
+Start `./02_agent_langgraph/run.sh`, then type:
 
 ```
 Hello, who are you?
@@ -224,7 +230,7 @@ From the end of `PROMPTS.md`:
    model will call it.
 2. Break the `calculator` docstring to one word. Which questions fail now?
 3. Remove `ONLY` from the RAG prompt and explain what happens.
-4. Point `data/` at your own notes and re-run `./run_ingest.sh`.
+4. Point `data/` at your own notes and re-run `./01_rag_chatbot/run.sh ingest`.
 5. Switch `EMBED_BACKEND` to `local`, rebuild, and explain why the similarity
    scores all changed.
 
@@ -236,9 +242,9 @@ From the end of `PROMPTS.md`:
 |---|---|
 | Yellow `Rate limit hit (429)` | *"The endpoint is busy — it is waiting and retrying, exactly like a real app should."* It recovers on its own. |
 | `429 quota exceeded` repeatedly | Your model's per-minute cap. Switch `GEMINI_CHAT_MODEL` to `gemini-3.5-flash-lite` in `.env` — it has the most generous free-tier limit. |
-| Embeddings fail | `EMBED_BACKEND=local ./run_ingest.sh`, then run the demo with the same prefix. No network needed. |
+| Embeddings fail | `EMBED_BACKEND=local ./01_rag_chatbot/run.sh ingest`, then run the demo with the same prefix. No network needed. |
 | A red error line | The chat loop survives errors. Just ask the next question. |
-| Total freeze | Ctrl-C, re-run the `./run_*.sh` script. The RAG index is on disk, so nothing is lost. |
+| Total freeze | Ctrl-C, re-run the `run.sh` script. The RAG index is on disk, so nothing is lost. |
 | Nothing works at all | Open `logs/` and talk through a log file from a previous run. Same material, no network. |
 
 **Tip:** run each demo once before the session. The log files in `logs/` then

@@ -15,7 +15,7 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 
-# ---- generated at runtime (rebuild with ./run_ingest.sh) ----------------
+# ---- generated at runtime (rebuild with 01_rag_chatbot/run.sh ingest) ---
 logs/
 01_rag_chatbot/index/
 

@@ -7,4 +7,6 @@ python3 -m venv .venv
 ./.venv/bin/python -m pip install --upgrade pip
 ./.venv/bin/python -m pip install -r requirements.txt
 echo
-echo "Done. Now run:  ./check.sh"
+echo "Done. Next:"
+echo "  ./01_rag_chatbot/run.sh ingest                build the RAG index"
+echo "  ./.venv/bin/python -m shared.preflight        verify everything works"

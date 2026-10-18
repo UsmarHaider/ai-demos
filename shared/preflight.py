@@ -1,6 +1,6 @@
 """Pre-flight check. Run this before you walk into the classroom.
 
-    ./check.sh
+    .venv/bin/python -m shared.preflight
 
 It makes exactly two API calls, then tells you whether the demo will work.
 """
@@ -10,7 +10,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 OK, FAIL, WARN = "\033[92m  OK  \033[0m", "\033[91m FAIL \033[0m", "\033[93m WARN \033[0m"
@@ -26,7 +26,7 @@ def check(label: str, fn) -> None:
         problems.append(label)
 
 
-print("\n  PRE-FLIGHT CHECK — demo_project\n" + "  " + "─" * 58)
+print("\n  PRE-FLIGHT CHECK\n" + "  " + "─" * 58)
 
 
 def _imports():
@@ -38,7 +38,10 @@ def _imports():
 
 def _venv():
     if "/.venv/" not in sys.executable:
-        raise RuntimeError(f"not using the project venv ({sys.executable}) — run ./check.sh")
+        raise RuntimeError(
+            f"not using the project venv ({sys.executable})\n"
+            "    use:  .venv/bin/python -m shared.preflight"
+        )
     return sys.executable.replace(str(ROOT), ".")
 
 
@@ -77,13 +80,16 @@ def _embed():
 def _index():
     path = ROOT / "01_rag_chatbot" / "index" / "vector_index.json"
     if not path.exists():
-        raise RuntimeError("missing — run ./run_ingest.sh")
+        raise RuntimeError("missing — run 01_rag_chatbot/run.sh ingest")
     import json
     from shared import config
     data = json.loads(path.read_text())
     backend = data.get("backend", "unknown")
     if backend not in (config.EMBED_BACKEND, "unknown"):
-        raise RuntimeError(f"index built with '{backend}' but .env says '{config.EMBED_BACKEND}' — run ./run_ingest.sh")
+        raise RuntimeError(
+            f"index built with '{backend}' but .env says '{config.EMBED_BACKEND}'"
+            " — run 01_rag_chatbot/run.sh ingest"
+        )
     return f"{len(data['texts'])} chunks ({backend} embeddings)"
 
 
@@ -107,4 +113,4 @@ if problems:
     print(f"\n  \033[91m{len(problems)} problem(s):\033[0m " + ", ".join(problems) + "\n")
     sys.exit(1)
 print("\n  \033[92mAll good. You are ready to present.\033[0m\n")
-print("  Demo 1:  ./run_rag.sh        Demo 2:  ./run_agent.sh\n")
+print("  Demo 1:  01_rag_chatbot/run.sh      Demo 2:  02_agent_langgraph/run.sh\n")

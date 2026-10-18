@@ -77,16 +77,16 @@ That creates a virtualenv at `.venv/` and installs the pinned versions from
 
 This project needs `langchain-core` **1.x**. Many machines already have
 `langchain-core` **0.3** installed globally for other work, and upgrading it
-system-wide breaks those projects. So everything here lives in
-`demo_project/.venv` and nothing outside this folder is touched.
+system-wide breaks those projects. So everything here lives in this project's
+own `.venv/` and nothing outside this folder is touched.
 
-**Consequence:** always launch through the `./run_*.sh` scripts, which pick the
+**Consequence:** always launch through the `run.sh` scripts, which pick the
 right Python automatically. If you run a file by hand, name the venv's Python
 explicitly:
 
 ```bash
-cd 01_rag_chatbot && ../.venv/bin/python chat.py     # correct
-cd 01_rag_chatbot && python3 chat.py                 # WRONG — ModuleNotFoundError
+cd 01_rag_chatbot && ../.venv/bin/python chat.py  # correct
+cd 01_rag_chatbot && python3 chat.py              # WRONG — ModuleNotFoundError
 ```
 
 <details>
@@ -153,20 +153,20 @@ before printing it.
 ## Step 4 — Build the RAG index
 
 ```bash
-./run_ingest.sh
+./01_rag_chatbot/run.sh ingest
 ```
 
 This reads the four documents, splits them into 15 chunks, embeds each one and
 saves the result to `01_rag_chatbot/index/`. It takes about two seconds and
 makes one API call.
 
-**Do this before `check.sh`**, because the index is not in the repository — it
+**Do this before `shared/preflight.py`**, because the index is not in the repository — it
 is generated, and `.gitignore` excludes it. A fresh clone has no index, and the
 pre-flight check reports a red `FAIL` until you build one.
 
-> You can skip this step if you like: `./run_rag.sh` builds the index
+> You can skip this step if you like: `./01_rag_chatbot/run.sh` builds the index
 > automatically when it is missing. Run it by hand when you want a class to
-> *watch* the index being built, or before `check.sh` so every line comes back
+> *watch* the index being built, or before `shared/preflight.py` so every line comes back
 > green.
 
 ---
@@ -174,14 +174,17 @@ pre-flight check reports a red `FAIL` until you build one.
 ## Step 5 — Run the pre-flight check
 
 ```bash
-./check.sh
+./.venv/bin/python -m shared.preflight
 ```
 
 This makes two real API calls and tells you in a few seconds whether everything
 works. Run it before you walk into a classroom.
 
+Eight separate things can break between one class and the next, and each gets
+its own line:
+
 ```
-  PRE-FLIGHT CHECK — demo_project
+  PRE-FLIGHT CHECK
   ──────────────────────────────────────────────────────────
 [  OK  ] Running inside the project venv       ./.venv/bin/python3
 [  OK  ] Packages import                       langchain-core 1.6.11
@@ -193,8 +196,7 @@ works. Run it before you walk into a classroom.
 [  OK  ] Embeddings respond                    gemini-embedding-001 → 3072 dimensions
 ```
 
-Every line is a separate failure you'd otherwise discover in front of an
-audience. If one says `FAIL`, the message names the fix; see
+If one says `FAIL`, the message names the fix; see
 [Troubleshooting](#troubleshooting).
 
 ---
@@ -210,15 +212,15 @@ cite which document it used.
 ### Run it
 
 ```bash
-./run_rag.sh        # interactive
+./01_rag_chatbot/run.sh        # interactive
 ```
 
 You built the index in [step 4](#step-4--build-the-rag-index); this is stage 2.
 
 ```bash
-./run_rag.sh --ask "What is the per diem for international travel?"   # one question, no prompt
-./run_rag.sh --k 5                                                    # retrieve 5 chunks, not 3
-./run_rag.sh --hide-prompt                                            # cleaner screen
+./01_rag_chatbot/run.sh --ask "What is the per diem for international travel?"  # one question, no prompt
+./01_rag_chatbot/run.sh --k 5                                                   # retrieve 5 chunks, not 3
+./01_rag_chatbot/run.sh --hide-prompt                                           # cleaner screen
 ```
 
 ### How it works
@@ -257,7 +259,7 @@ Drop `.md` or `.txt` files into `01_rag_chatbot/data/`, delete the old index,
 and rebuild:
 
 ```bash
-rm -rf 01_rag_chatbot/index && ./run_ingest.sh
+rm -rf 01_rag_chatbot/index && ./01_rag_chatbot/run.sh ingest
 ```
 
 ---
@@ -272,9 +274,9 @@ arithmetic. An agent gives it tools and lets it decide when to reach for one.
 ### Run it
 
 ```bash
-./run_agent.sh                                        # interactive, with memory
-./run_agent.sh --ask "How many days are left in this year?"
-./run_agent.sh --graph                                # just draw the graph and exit
+./02_agent_langgraph/run.sh          # interactive, with memory
+./02_agent_langgraph/run.sh --ask "How many days are left in this year?"
+./02_agent_langgraph/run.sh --graph  # just draw the graph and exit
 ```
 
 In-chat commands: `/graph` `/tools` `/prompt` `/reset` `/quit`
@@ -357,8 +359,8 @@ never any doubt about what answered.
 RAG embeddings can come from a backend that needs no network and no key:
 
 ```bash
-EMBED_BACKEND=local ./run_ingest.sh     # rebuild the index
-EMBED_BACKEND=local ./run_rag.sh        # ask questions
+EMBED_BACKEND=local ./01_rag_chatbot/run.sh ingest  # rebuild the index
+EMBED_BACKEND=local ./01_rag_chatbot/run.sh         # ask questions
 ```
 
 `local` is a hashing keyword embedding written in numpy (`shared/embeddings.py`).
@@ -387,7 +389,7 @@ difference.
 **"Does the model run the code?"** — No. It only *asks* for a tool by name with
 arguments; your Python runs it. Say this while the TOOL NODE step is on screen.
 
-**"What actually is a vector?"** — `./run_ingest.sh` prints the first five
+**"What actually is a vector?"** — `./01_rag_chatbot/run.sh ingest` prints the first five
 numbers of a real 3072-dimension embedding. Point at them.
 
 **"How does it know which tool to use?"** — Type `/tools` in the agent chat. The
@@ -406,14 +408,14 @@ stays the same.
 
 | Problem | Fix |
 |---|---|
-| `ModuleNotFoundError` | You used system `python` instead of the venv — use the `./run_*.sh` scripts, or `./.venv/bin/python` |
+| `ModuleNotFoundError` | You used system `python` instead of the venv — use the `run.sh` scripts, or `./.venv/bin/python` |
 | `No such file or directory: ./setup.sh` | You are in the wrong folder, or need `chmod +x *.sh` |
 | A key is reported missing | `.env` doesn't exist (`cp .env.example .env`), or you are not in the project folder |
-| Model call hangs or times out | Run `./check.sh` — it makes a real call and reports what failed |
+| Model call hangs or times out | Run `./.venv/bin/python -m shared.preflight` — it makes a real call and reports what failed |
 | `429 ... quota exceeded` | Already handled — the code waits and retries with a yellow warning. Keep talking; it recovers |
-| Embeddings fail | `EMBED_BACKEND=local ./run_ingest.sh`, then `EMBED_BACKEND=local ./run_rag.sh` — no network needed |
-| `No index found`, or `check.sh` says `RAG index built ... FAIL` | `./run_ingest.sh`. Expected on a fresh clone — the index is generated, not committed |
-| `index built with 'X' but .env says 'Y'` | You changed `EMBED_BACKEND`. Run `./run_ingest.sh` to rebuild |
+| Embeddings fail | `EMBED_BACKEND=local ./01_rag_chatbot/run.sh ingest`, then `EMBED_BACKEND=local ./01_rag_chatbot/run.sh` — no network needed |
+| `No index found`, or `shared/preflight.py` says `RAG index built ... FAIL` | `./01_rag_chatbot/run.sh ingest`. Expected on a fresh clone — the index is generated, not committed |
+| `index built with 'X' but .env says 'Y'` | You changed `EMBED_BACKEND`. Run `./01_rag_chatbot/run.sh ingest` to rebuild |
 | Output too wide / wrapping | Shrink the terminal font, or pass `--hide-prompt` |
 
 Gemini free-tier limits differ sharply by model, which bites during a live demo:
@@ -433,33 +435,37 @@ Gemini free-tier limits differ sharply by model, which bites during a live demo:
 ├── README.md                  this file
 ├── PRESENTER_GUIDE.md         minute-by-minute script for a 60-minute session
 ├── PROMPTS.md                 the prompts inside the code, and build prompts
-├── .env.example               template for your keys — copy to .env
+├── .env.example               template for your key — copy to .env
 ├── requirements.txt           pinned versions, verified working together
 ├── setup.sh                   creates .venv and installs dependencies
-├── check.sh                   pre-flight check — run before presenting
-├── preflight.py               the nine checks it runs
-├── run_ingest.sh              Demo 1, stage 1: build the RAG index
-├── run_rag.sh                 Demo 1: the RAG chatbot
-├── run_agent.sh               Demo 2: the LangGraph agent
 │
 ├── shared/                    used by both demos
 │   ├── config.py              reads .env, validates it, fails with a clear message
-│   ├── llm.py                 one function, two providers
+│   ├── llm.py                 builds the chat model — the only file that knows which
 │   ├── embeddings.py          Gemini embeddings + the offline numpy fallback
-│   └── logger.py              the colour terminal output and the log files
+│   ├── logger.py              the colour terminal output and the log files
+│   └── preflight.py           the eight checks — run it before you present
 │
-├── 01_rag_chatbot/
-│   ├── data/*.md              four fictional policy documents
+├── 01_rag_chatbot/            ─── DEMO 1 ───────────────────────────────
+│   ├── README.md              how RAG works, and what to point at on screen
+│   ├── run.sh                 ./run.sh  ·  ./run.sh ingest
 │   ├── ingest.py              load → split → embed → save
 │   ├── vector_store.py        a vector database in ~90 lines of numpy
-│   └── chat.py                retrieve → augment → generate → cite
+│   ├── chat.py                retrieve → augment → generate → cite
+│   ├── data/*.md              four fictional policy documents
+│   └── index/                 the saved index. Generated, gitignored
 │
-├── 02_agent_langgraph/
+├── 02_agent_langgraph/        ─── DEMO 2 ───────────────────────────────
+│   ├── README.md              how the loop works, and the tool-calling detail
+│   ├── run.sh                 ./run.sh  ·  ./run.sh --graph
 │   ├── tools.py               get_current_datetime, calculator (AST whitelist)
 │   └── agent.py               the StateGraph loop, built node by node
 │
 └── logs/                      generated at runtime, gitignored
 ```
+
+Each demo is self-contained: its launcher, its code and its data live in its own
+folder. The project root holds only the things both demos share.
 
 ### For presenters
 

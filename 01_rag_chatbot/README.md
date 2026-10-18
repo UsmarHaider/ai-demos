@@ -18,9 +18,9 @@ the prompt. The model's only job is to read them and answer.
 ## Run it
 
 ```bash
-../run_ingest.sh                      # or: ../.venv/bin/python ingest.py
-../run_rag.sh                         # or: ../.venv/bin/python chat.py
-../run_rag.sh --ask "How many annual leave days do I get?"
+./run.sh ingest   # build the index   · or: ../.venv/bin/python ingest.py
+./run.sh          # ask questions     · or: ../.venv/bin/python chat.py
+./run.sh --ask "How many annual leave days do I get?"
 ```
 
 | Flag | Effect |
@@ -58,7 +58,7 @@ Students assume one model does everything. It does not:
 ## No network? Switch the embeddings
 
 ```bash
-EMBED_BACKEND=local ./run_ingest.sh && EMBED_BACKEND=local ./run_rag.sh
+EMBED_BACKEND=local ./run.sh ingest && EMBED_BACKEND=local ./run.sh
 ```
 
 That uses the hashing keyword embedding in `shared/embeddings.py` — no key, no

@@ -148,7 +148,7 @@ def main() -> None:
     if store.backend not in (config.EMBED_BACKEND, "unknown"):
         log.error(
             f"This index was built with EMBED_BACKEND={store.backend}, but .env "
-            f"now says {config.EMBED_BACKEND}. Rebuild it:   ./run_ingest.sh"
+            f"now says {config.EMBED_BACKEND}. Rebuild it:   ./run.sh ingest"
         )
         raise SystemExit(1)
 
