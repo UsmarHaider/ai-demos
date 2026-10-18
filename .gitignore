@@ -1,0 +1,24 @@
+# ---- secrets: never commit ----------------------------------------------
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ---- virtualenv ---------------------------------------------------------
+.venv/
+venv/
+
+# ---- python -------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ---- generated at runtime (rebuild with ./run_ingest.sh) ----------------
+logs/
+01_rag_chatbot/index/
+
+# ---- os -----------------------------------------------------------------
+.DS_Store
+Thumbs.db
